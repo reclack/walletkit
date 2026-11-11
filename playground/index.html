@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>walletkit playground</title>
+		<style>
+			body {
+				margin: 0;
+				padding: 2rem;
+				display: grid;
+				gap: 2rem;
+				grid-template-columns: repeat(2, minmax(0, 360px));
+				font: 16px system-ui, sans-serif;
+				background: #f0f0f3;
+			}
+			section { background: #fff; border-radius: 14px; padding: 1.25rem; }
+			section.dark { background: #0e0e11; color: #f4f4f6; }
+			section.dashboard { background: #f8f8fa; border: 1px solid #e5e5ea; }
+			h2 { margin: 0 0 1rem; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.6; }
+		</style>
+	</head>
+	<body>
+		<section>
+			<h2>Inline, light</h2>
+			<reclack-connect data-shared theme-mode="light" asset-base="./assets/"></reclack-connect>
+		</section>
+		<section class="dark">
+			<h2>Inline, dark</h2>
+			<reclack-connect data-shared theme-mode="dark" asset-base="./assets/"></reclack-connect>
+		</section>
+		<section>
+			<h2>Inline, branded</h2>
+			<reclack-connect data-shared theme-mode="light" brand="#ff6600" radius="18px" asset-base="./assets/"></reclack-connect>
+		</section>
+		<section class="dark">
+			<h2>Branded, dark</h2>
+			<reclack-connect data-shared theme-mode="dark" brand="#12a150" radius="4px" asset-base="./assets/"></reclack-connect>
+		</section>
+		<section class="dashboard">
+			<h2>Theme set as a property, after mount</h2>
+			<!-- No theme attributes at all: the theme arrives as a property
+			     after mount, which is the only thing a framework can do. -->
+			<reclack-connect data-shared id="dashboard" asset-base="./assets/"></reclack-connect>
+		</section>
+		<script type="module" src="./demo.ts"></script>
+	</body>
+</html>
