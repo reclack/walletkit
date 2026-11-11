@@ -125,12 +125,9 @@ this package, so the tag and its attributes autocomplete without a wrapper.
 | `chain-id` | number | none | Require this chain, switching the wallet if needed |
 | `intent` | `address`, `balance`, comma separated | `address` | What to return |
 | `keep-alive` | present or absent | absent | Stay connected after resolving |
-| `theme-mode` | `light`, `dark`, `system` | `system` | Which palette to wear |
-| `brand` | `#rrggbb` | Reclack's | Your colour, worn by the primary action |
-| `radius` | CSS length | `10px` | Corner radius |
-| `font` | CSS font stack | inherited | Type |
 | `asset-base` | URL path | `/images/` | Where the wallet logos are served from |
 | `api-url` | URL | Reclack's | A different deployment, such as a sandbox |
+| `theme` | `WalletKitTheme`, as a property | none | Colours, radius and type. See [Theming](#theming) |
 
 ### Properties
 
@@ -287,6 +284,35 @@ createWalletKit({
   },
 })
 ```
+
+On the element, set it as a property:
+
+```ts
+element.theme = { mode: 'dark', brand: '#ff6600', radius: '14px' }
+```
+
+### Theme attributes
+
+A nested object will not fit in an attribute, so the four values a plain HTML
+page is most likely to want have one each. They build the same theme:
+
+| Attribute | Theme field | Values | Default |
+| --- | --- | --- | --- |
+| `theme-mode` | `mode` | `light`, `dark`, `system` | `system` |
+| `brand` | `brand` | `#rrggbb` | Reclack's |
+| `radius` | `radius` | CSS length | `10px` |
+| `font` | `fontFamily` | CSS font stack | inherited |
+
+```html
+<reclack-connect theme-mode="dark" brand="#ff6600" radius="14px"></reclack-connect>
+```
+
+**A theme wins over all four.** Setting the `theme` property, or sharing a kit
+that already carries a theme, makes these attributes ignored and uses the
+theme whole. That is deliberate: a checkout that themed its kit should not
+have to theme every picker inside it as well.
+
+### Following the reader's system
 
 The resolved mode and the tokens are part of the state you are already
 subscribed to, so the picker follows the reader's system without a second
