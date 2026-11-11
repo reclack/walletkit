@@ -1,0 +1,7 @@
+# esbuild needs its install script to put the native binary in place; without
+# it, Vite cannot build. Reown's AppKit ships its own wallet modal, which this
+# element does not use because it draws its own pairing panel, so its scripts
+# are not needed and saying so keeps an install from stopping to ask.
+allowBuilds:
+  esbuild: true
+  '@reown/appkit': false

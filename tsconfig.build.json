@@ -1,0 +1,13 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		// The core entry has no renderer in it. Preact's JSX types would
+		// still be fine here, but leaving them out is the check that nothing
+		// in the core has quietly grown a component.
+		"jsx": "preserve"
+	},
+	// Tests are not shipped, and the element is built by Vite, which bundles
+	// its renderer in. tsc emits the core, module by module, so a consumer's
+	// bundler can drop what it does not use.
+	"exclude": ["src/**/*.test.ts", "src/element"]
+}

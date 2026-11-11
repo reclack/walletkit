@@ -1,0 +1,15 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		// Declarations only. Vite emits the element's JavaScript, with its
+		// renderer bundled in; this is just the types that go beside it.
+		"emitDeclarationOnly": true,
+		"declarationMap": false,
+		"outDir": "dist"
+	},
+	"include": [
+		"src/element",
+		"src/index.ts",
+		"src/css.d.ts"
+	]
+}
