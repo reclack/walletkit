@@ -1,0 +1,1012 @@
+/*
+ * The picker's own stylesheet, adopted into a shadow root.
+ *
+ * Inside a shadow root nothing here can reach the host's page and nothing in
+ * the page can reach in, which is why the class names are the plain ones the
+ * markup reads with rather than a prefixed set defending against collisions
+ * that cannot happen. The tokens are prefixed, because those are set on the
+ * element itself, where a page's own `--surface` would otherwise collide.
+ *
+ * Every value that could differ between hosts comes from a token. Nothing
+ * here hard-codes a colour except the two neutrals the marks sit on, which
+ * are artwork plates rather than surfaces and must stay neutral whatever a
+ * merchant chose: a tint behind somebody else's logo is two brands at once.
+ */
+
+:host {
+	/* Fallbacks only. The element sets every one of these from the theme the
+	   moment it mounts; these keep it legible if it is rendered before that,
+	   or styled by a page that only sets some of them. */
+	--rkw-surface: #ffffff;
+	--rkw-ground: #f6f7f9;
+	--rkw-plate: #f6f7f9;
+	--rkw-ink: #101014;
+	--rkw-ink-muted: #6b6b76;
+	--rkw-line: #e5e5ea;
+	--rkw-brand: #533afd;
+	--rkw-brand-ink: #ffffff;
+	--rkw-danger: #b42318;
+	--rkw-ok: #12a150;
+	--rkw-installed: #16a34a;
+	--rkw-installed-ink: #15803d;
+	--rkw-radius: 10px;
+	/* Grey, matching an unbranded host. The theme replaces it with a thinned
+	   brand the moment a host sets one; see hoverWash in theme.ts. */
+	--rkw-hover: color-mix(in srgb, var(--rkw-ink-muted) 12%, transparent);
+	--rkw-cross: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='round'%3E%3Cpath d='M6 6 18 18M18 6 6 18'/%3E%3C/svg%3E");
+
+	display: block;
+	/* What the browser should draw its own controls in: scrollbars above
+	   all, which otherwise come from the host's document and arrive light
+	   down the edge of a dark panel. Declaring the scheme is better than
+	   painting a thumb by hand, which is what this used to do: the native
+	   one is the one the rest of the page already has. */
+	color-scheme: var(--rkw-color-scheme, light);
+	/* Thin, and otherwise native. The scheme above is what tells the browser
+	   which way to draw it; this only asks for less of it, because a
+	   full-width bar down a 360px dialog is a lot of edge. */
+	scrollbar-width: thin;
+	color: var(--rkw-ink);
+	/* Inherited unless the host named a face, which is almost always what a
+	   page wants: the picker should arrive in the type already on screen. */
+	font-family: var(--rkw-font, inherit);
+	font-size: 16px;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+}
+
+:host([hidden]) {
+	display: none;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+button {
+	font: inherit;
+	color: inherit;
+}
+.wallets {
+	display: grid;
+	gap: 0.5rem;
+}
+
+.wallet {
+	display: flex;
+	align-items: center;
+	gap: 0.625rem;
+	width: 100%;
+	padding: 0.625rem 0.75rem;
+	border: 1px solid var(--rkw-line);
+	border-radius: var(--rkw-radius);
+	background: var(--rkw-surface);
+	font: inherit;
+	font-size: 0.875rem;
+	/* Spelled out, like every other button here: a button left with the UA's
+	   own colour comes out system blue on iOS, and these are wallet names,
+	   not links. */
+	color: inherit;
+	cursor: pointer;
+	text-align: left;
+}
+
+.wallet:hover:not(:disabled) {
+	border-color: var(--rkw-brand);
+}
+
+.wallet:disabled {
+	opacity: 0.6;
+	cursor: progress;
+}
+
+.wallet-mark {
+	display: grid;
+	place-items: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 7px;
+	background: var(--rkw-plate);
+	font-size: 0.75rem;
+	font-weight: 700;
+	overflow: hidden;
+	flex: none;
+}
+
+.wallet-mark img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+.wallet-name {
+	flex: 1;
+	font-weight: 500;
+}
+
+.wallet-tag {
+	font-size: 0.6875rem;
+	color: var(--rkw-ink-muted);
+}
+
+.connected {
+	display: flex;
+	align-items: center;
+	gap: 0.625rem;
+	padding: 0.625rem 0.75rem;
+	border: 1px solid var(--rkw-line);
+	border-radius: var(--rkw-radius);
+}
+
+.connected-meta {
+	display: grid;
+	flex: 1;
+	min-width: 0;
+}
+
+.connected-meta strong {
+	font-size: 0.875rem;
+}
+
+.connected-meta code {
+	font-size: 0.75rem;
+	color: var(--rkw-ink-muted);
+}
+
+.primary,
+.secondary {
+	font: inherit;
+	font-size: 0.9375rem;
+	font-weight: 600;
+	padding: 0.75rem 1rem;
+	border-radius: var(--rkw-radius);
+	border: 1px solid transparent;
+	cursor: pointer;
+	width: 100%;
+}
+
+.primary {
+	background: var(--rkw-brand);
+	color: var(--rkw-brand-ink);
+}
+
+.primary:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.secondary {
+	background: var(--rkw-surface);
+	border-color: var(--rkw-line);
+	color: inherit;
+	font-size: 0.8125rem;
+	padding: 0.5rem 0.75rem;
+	width: auto;
+	justify-self: start;
+}
+
+.link-button {
+	font: inherit;
+	font-size: 0.8125rem;
+	background: none;
+	border: 0;
+	color: var(--rkw-brand);
+	cursor: pointer;
+	padding: 0;
+}
+
+/* The recurring authorization, inside the payment card.
+ *
+ * Carries no background of its own: it sits in the card now rather than in a
+ * second one beside it. Full ink weight, not muted: the payer is agreeing to
+ * future charges, and this is the sentence that says so. */
+.plan-terms {
+	margin: 0.625rem 0 0;
+	font-size: 0.8125rem;
+	line-height: 1.5;
+	color: var(--rkw-ink);
+}
+
+.pending {
+	margin: 0;
+	font-size: 0.75rem;
+	color: var(--rkw-ink-muted);
+}
+
+.error {
+	margin: 0;
+	font-size: 0.8125rem;
+	color: var(--rkw-danger);
+}
+
+.muted {
+	color: var(--rkw-ink-muted);
+	font-size: 0.875rem;
+	margin: 0;
+}
+
+/* ---- All-wallets dialog -------------------------------------------------- */
+
+.wallet-dialog {
+	/* Narrow and tall. The list reads as a column of wallets, and a column
+	   wants height rather than width: at 26rem the rows were wide enough to
+	   leave a gulf between a wallet's name and its badge. */
+	width: min(22.5rem, calc(100vw - 2rem));
+	/* Tall enough for the hand-off panel, which is a fixed block of tabs, a
+	   code and an install row and has nothing to scroll. The wallet list is
+	   kept shorter than this by a cap on the grid itself, further down. */
+	max-height: min(40rem, calc(100dvh - 4rem));
+	/* No padding here on purpose: see wallet-dialog.tsx: padding on the dialog
+	   itself would make its own inner edge behave like the backdrop. */
+	padding: 0;
+	border: 1px solid var(--rkw-line);
+	border-radius: 24px;
+	background: var(--rkw-surface);
+	color: inherit;
+	/* Lifts off a backdrop that is now nearly as light as the dialog. */
+	box-shadow:
+		0 24px 60px -20px rgb(16 16 20 / 28%),
+		0 2px 6px rgb(16 16 20 / 5%);
+	/* Needs interpolate-size on :root to animate to and from auto; without it
+	   the height simply snaps, which is the old behaviour. */
+	transition:
+		height 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+		width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+	/* The dialog itself does not scroll: its title, its back button and the
+	   search field stay put, and only the wallets move under them. Scrolling
+	   the whole box took the search field off the top of a long list, which
+	   is the one control someone scrolling a long list wants. */
+	overflow: hidden;
+	/* Centred by the dialog element itself; margin:auto keeps it there when the
+	   viewport is short enough for the max-height to bite. */
+	margin: auto;
+}
+
+/* Only once it is open, and never on the bare element: a closed dialog is
+   hidden by the browser's own `dialog:not([open]) { display: none }`, which
+   any author rule outranks. Setting display here unconditionally left the
+   picker on screen from the moment the page loaded. */
+.wallet-dialog[open] {
+	display: flex;
+}
+
+.wallet-dialog::backdrop {
+	/* A wash rather than a scrim. What is behind stays legible, which matters
+	   when the thing being confirmed is a price: dimming it to near-black
+	   reads as leaving the page rather than stepping in front of it.
+	
+	   Mixed from the theme's own backdrop colour rather than fixed, because
+	   this covers the host's page and the host is who set the theme. Fixed
+	   light, it was a glare over a dark dashboard. */
+	background: color-mix(in srgb, var(--rkw-ground) 55%, transparent);
+	backdrop-filter: blur(2px);
+}
+
+/* The wallet list: one row each, not a grid of tiles. A row has somewhere to
+   put the badge that says whether this wallet is here or needs scanning,
+   which a tile does not. */
+.wallet-list {
+	display: grid;
+	gap: 0.25rem;
+}
+
+.wallet-row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	width: 100%;
+	padding: 0.75rem 0.5rem;
+	border: 0;
+	border-radius: 12px;
+	background: transparent;
+	font: inherit;
+	color: inherit;
+	text-align: left;
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+
+/* The same wash as the grid's tiles: one list in two layouts, so hovering
+   should not answer in a different colour depending on which is showing. */
+.wallet-row:hover:not(:disabled),
+.wallet-row:focus-visible {
+	background: var(--rkw-hover);
+}
+
+/* 40px, as the reference sets it. */
+.wallet-row .wallet-mark-lg {
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 12px;
+}
+
+.wallet-row-name {
+	flex: 1;
+	min-width: 0;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.wallet-row-tag {
+	flex: none;
+	padding: 0.125rem 0.4375rem;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--rkw-brand) 9%, transparent);
+	color: var(--rkw-brand);
+	font-size: 0.625rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+/* Installed is already true rather than a next step, so it reads as
+   confirmation rather than as an action. */
+.wallet-row-tag.is-installed {
+	background: color-mix(in srgb, var(--rkw-installed) 12%, transparent);
+	color: var(--rkw-installed-ink);
+}
+
+.wallet-row-tag.is-muted {
+	background: color-mix(in srgb, var(--rkw-ink-muted) 10%, transparent);
+	color: var(--rkw-ink-muted);
+}
+
+/* The door to the full list. Tinted so it reads as the end of the list
+   rather than as a sixth wallet. */
+.wallet-search-row {
+	flex: none;
+	margin-top: 0.375rem;
+	/* Shorter than a wallet row on purpose. The rows above are sized by a
+	   40px mark; this one carries a 20px icon, so matching their height was
+	   padding around nothing. */
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	/* The same plate the wallets sit on, so this reads as one more row of
+	   the list rather than as a band of the merchant's colour. */
+	background: var(--rkw-plate);
+}
+
+/* Keeps the 40px column so the label still lines up with the wallet names,
+   without forcing the row to that height. */
+.wallet-search-row .wallet-search-icon {
+	height: 1.5rem;
+}
+
+.wallet-search-row:hover:not(:disabled),
+.wallet-search-row:focus-visible {
+	background: var(--rkw-hover);
+}
+
+.wallet-search-icon {
+	display: grid;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	flex: none;
+	color: var(--rkw-ink-muted);
+}
+
+.wallet-search-icon svg {
+	width: 1.25rem;
+	height: 1.25rem;
+}
+
+.wallet-row-count {
+	flex: none;
+	color: var(--rkw-ink-muted);
+	font-size: 0.8125rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.wallet-row-chevron {
+	flex: none;
+	color: var(--rkw-ink-muted);
+	font-size: 1rem;
+	line-height: 1;
+}
+
+.wallet-dialog-body {
+	display: flex;
+	flex-direction: column;
+	/* Without this the body refuses to be shorter than its content and the
+	   list below never gets a scrollbar of its own. */
+	min-height: 0;
+	width: 100%;
+	/* A little less at the foot than at the head. The grid takes most of
+	   even this back; see its negative margin. */
+	padding: 1rem 1rem 0.875rem;
+}
+
+.wallet-dialog-head {
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-bottom: 1.125rem;
+}
+
+.wallet-dialog-head h2 {
+	margin: 0;
+	font-size: 0.9375rem;
+	font-weight: 600;
+}
+
+.icon-button {
+	font: inherit;
+	font-size: 1.25rem;
+	line-height: 1;
+	width: 1.75rem;
+	height: 1.75rem;
+	display: grid;
+	place-items: center;
+	border: 0;
+	border-radius: 7px;
+	background: none;
+	color: var(--rkw-ink-muted);
+	cursor: pointer;
+}
+
+.icon-button:hover {
+	background: var(--rkw-hover);
+	color: var(--rkw-ink);
+}
+
+.wallet-search {
+	font: inherit;
+	font-size: 0.875rem;
+	width: 100%;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--rkw-line);
+	border-radius: var(--rkw-radius);
+	background: var(--rkw-surface);
+	color: inherit;
+	margin-bottom: 0.875rem;
+	flex: none;
+}
+
+/* The clear button the browser draws inside a search field.
+ *
+ * Drawn here rather than left to the browser: the native one is a fixed
+ * bitmap, heavy next to this type and in the system's blue rather than the
+ * dialog's own grey, and its weight cannot be touched while it is still the
+ * browser's. A mask over a background colour gives a hairline cross in a
+ * colour that follows the page.
+ */
+.wallet-search::-webkit-search-cancel-button {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 1.125rem;
+	height: 1.125rem;
+	cursor: pointer;
+	background-color: var(--rkw-ink-muted);
+	-webkit-mask: var(--rkw-cross) center / contain no-repeat;
+	mask: var(--rkw-cross) center / contain no-repeat;
+}
+
+.wallet-search::-webkit-search-cancel-button:hover {
+	background-color: var(--rkw-ink);
+}
+
+/* The one part that scrolls.
+ *
+ * It reaches past the body's padding on the right and pads itself back, so
+ * the scrollbar rides the dialog's own edge while the wallets stay lined up
+ * with the heading above them. A scrollbar floating an inch inside the panel
+ * reads as a second, inner window. */
+.wallet-grid,
+.wallet-list {
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	margin-right: -1rem;
+	padding-right: 1rem;
+}
+
+.wallet-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.625rem;
+	/* Reaches into the body's foot, leaving a hair under the last row.
+	   A grid that scrolls is cut off mid-row anyway, so a full foot under
+	   it reads as a gap rather than as the end of anything. The views that
+	   do end, the short list and the hand-off panel, keep the full foot. */
+	margin-bottom: -0.625rem;
+	/* About four rows. The dialog is taller than this to fit the hand-off
+	   panel, and a list stretched to match would be a long scroll where a
+	   short one reads better. */
+	max-height: 24rem;
+}
+
+/* A filled tile rather than an outlined one. Twenty-odd outlines in a grid
+   read as a table; the fill lets the wallet marks carry the colour.
+   Neutral rather than branded, for the same reason: a grid of tinted tiles
+   puts the merchant's colour behind twenty logos that were not drawn for
+   it. */
+.wallet-tile {
+	position: relative;
+	display: grid;
+	justify-items: center;
+	gap: 0.5rem;
+	padding: 0.875rem 0.5rem;
+	border: 0;
+	border-radius: 16px;
+	background: var(--rkw-plate);
+	font: inherit;
+	color: inherit;
+	text-decoration: none;
+	cursor: pointer;
+	text-align: center;
+	transition: background 0.15s ease;
+}
+
+/* The merchant's button colour, thinned to a wash, or grey where they set
+   none. Hovering is the one moment a tile is the thing being chosen, so it
+   answers in their colour. Thin enough to leave the name readable and the
+   logo's white plate untouched. */
+.wallet-tile:hover:not(:disabled),
+.wallet-tile:focus-visible {
+	background: var(--rkw-hover);
+}
+
+/* The mark sits on white inside the tile, so a dark logo does not merge into
+   the fill behind it. */
+.wallet-tile .wallet-mark-lg {
+	width: 3.25rem;
+	height: 3.25rem;
+	border-radius: 14px;
+	background: var(--rkw-surface);
+}
+
+.wallet-tile:disabled {
+	opacity: 0.6;
+	cursor: progress;
+}
+
+.wallet-mark-lg {
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 12px;
+	font-size: 1rem;
+}
+
+.wallet-tile-name {
+	font-size: 0.75rem;
+	width: 100%;
+	font-weight: 500;
+	line-height: 1.2;
+	/* Long names truncate rather than reflowing the grid. */
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* A tick in the corner, out of the flow, so every tile is the same height
+   whether or not its wallet is here. */
+.wallet-tile-badge {
+	position: absolute;
+	top: 0.4375rem;
+	right: 0.4375rem;
+	display: grid;
+	place-items: center;
+	width: 0.9375rem;
+	height: 0.9375rem;
+	border-radius: 999px;
+	/* Outlined rather than filled: a solid dot is the loudest thing on a tile
+	   whose job is to show a logo. The ring says the same with the tile
+	   showing through it. */
+	background: var(--rkw-surface);
+	border: 1.5px solid var(--rkw-installed);
+	color: var(--rkw-installed);
+	/* A hairline of tile behind it, so the mark reads as sitting on the tile
+	   rather than stamped onto the logo when a wallet's art reaches the
+	   corner. */
+	box-shadow: 0 0 0 2px var(--rkw-plate);
+}
+
+.wallet-tile-badge svg {
+	width: 0.5rem;
+	height: 0.5rem;
+	stroke-width: 4;
+}
+
+/* The wallets behind "Other wallets", stacked.
+
+   Their own marks rather than an ellipsis, so somebody can see their wallet
+   is in there without opening the dialog to find out.
+
+   The box stays the width of a single mark even though the marks overflow
+   it. Every other row in this list has a 1.75rem mark, and a stack that
+   claimed its natural width would push this row's label out of line with the
+   ones above; the overhang falls into the gap instead, which has room. */
+.wallet-stack {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	flex: none;
+}
+
+.wallet-stack img {
+	width: 1rem;
+	height: 1rem;
+	border-radius: 50%;
+	object-fit: cover;
+	/* A ring in the row's own colour separates the marks where they overlap,
+	   without a border that would read as a control. */
+	box-shadow: 0 0 0 2px var(--rkw-surface);
+}
+
+.wallet-stack img + img {
+	margin-left: -0.4375rem;
+}
+
+.wallet-more-button .wallet-mark {
+	letter-spacing: 0.05em;
+	color: var(--rkw-ink-muted);
+}
+
+.wallet-empty {
+	padding: 1rem 0 0;
+	text-align: center;
+}
+
+/* ---- Wallet hand-off panel ---------------------------------------------- */
+
+.icon-button-spacer {
+	width: 1.75rem;
+	height: 1.75rem;
+}
+
+/* The status a payer sees while their wallet is deciding. The mark is large
+   because it is the only thing on screen that says which wallet to go and
+   look at. */
+/* The waiting view is mostly empty by nature: a mark, two lines and a way to
+   try again. Given room and centred, that reads as the dialog waiting with
+   the payer; pinned to the top of a short box it reads as unfinished.
+ */
+.connect-status {
+	gap: 0.625rem;
+	min-height: 17rem;
+	align-content: center;
+	padding: 1.25rem 0 1.5rem;
+}
+
+/* .secondary sets justify-self: start, which wins over the panel's
+   justify-items and was pulling this to the left edge. */
+.connect-status .connect-retry {
+	justify-self: center;
+	margin-top: 0.5rem;
+}
+
+/* The link into the wallet.
+ *
+ * It wears .primary, which was written for buttons: a button centres its own
+ * text and carries no underline, and an anchor does neither. Without these it
+ * rendered as left-aligned underlined text on a purple block.
+ */
+.connect-open {
+	display: block;
+	text-align: center;
+	text-decoration: none;
+}
+
+/* The phone hand-off is two lines and a button, so it needs room given to it
+   rather than taken from a code that is not there. */
+.connect-handoff {
+	min-height: 16rem;
+	align-content: center;
+	gap: 1rem;
+}
+
+.connect-status-mark {
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 5.5rem;
+	height: 5.5rem;
+}
+
+.connect-status-mark .wallet-mark-lg {
+	width: 4rem;
+	height: 4rem;
+	border-radius: 18px;
+	background: var(--rkw-surface);
+}
+
+.connect-spinner {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	color: var(--rkw-brand);
+	animation: connect-spin 1.1s linear infinite;
+}
+
+@keyframes connect-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.connect-retry,
+.connect-copy {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+}
+
+.connect-retry-icon {
+	width: 0.875rem;
+	height: 0.875rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.connect-spinner,
+	.qr-spinner,
+	.state-loading-spinner {
+		animation: none;
+	}
+}
+
+.connect-status-title {
+	margin: 0.5rem 0 0;
+	font-size: 0.9375rem;
+	font-weight: 600;
+}
+
+.connect-status-title.is-error {
+	color: var(--rkw-danger);
+}
+
+.connect-status-note {
+	margin: 0;
+	max-width: 30ch;
+	color: var(--rkw-ink-muted);
+	font-size: 0.8125rem;
+	line-height: 1.5;
+	text-align: center;
+}
+
+/* Each view of the wallet dialog arrives rather than replaces.
+ *
+ * The dialog's own height transition carries the box; this carries what is
+ * inside it, so the code does not appear fully formed in a box that is still
+ * growing. Short and slight on purpose: this sits between a payer and a
+ * payment, and anything longer reads as the page hesitating.
+ */
+@keyframes wallet-view-in {
+	from {
+		opacity: 0;
+		transform: translateY(6px) scale(0.985);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.connect-panel,
+.wallet-list,
+.wallet-grid {
+	animation: wallet-view-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.connect-panel,
+	.wallet-list,
+	.wallet-grid {
+		animation: none;
+	}
+}
+
+.connect-panel {
+	display: grid;
+	gap: 0.875rem;
+	justify-items: center;
+	padding: 0.5rem 0 0;
+	/* Does not scroll at any ordinary size. This is for a short window,
+	   where it gives way under the fixed heading rather than being clipped. */
+	min-height: 0;
+	overflow-y: auto;
+}
+
+/* The scanner picker. Sits above the code, because which scanner the payer
+   reaches for is the choice they make before anything else here. No margin:
+   the panel is a grid and already puts its own gap under this. */
+/* A segmented control rather than a pill in a trough. No padding and no gap,
+   so the selected half meets the border: inset at this size, the three
+   slivers of background around it just read as crowding. */
+/* The two-way switch above the code: which scanner the payer is being asked
+   to use.
+ *
+ * Carried over whole rather than left to the base rules it used to inherit
+ * from, which lived in the checkout's own stylesheet. Inside a shadow root
+ * nothing of the host's reaches in, so a rule that is not here is the
+ * browser's default, and the browser's default button is a light pill that
+ * disappears on a dark panel. */
+.portal-tabs {
+	display: flex;
+	gap: 0.25rem;
+	padding: 0.3125rem;
+	border: 1px solid var(--rkw-line);
+	border-radius: var(--rkw-radius);
+	/* Neutral, so the half that is not selected is a trough rather than a
+	   second helping of the merchant's colour behind the one that is. */
+	background: var(--rkw-plate);
+}
+
+.portal-tab {
+	flex: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.375rem;
+	padding: 0.4375rem 0.5rem;
+	border: 0;
+	border-radius: 7px;
+	background: transparent;
+	color: var(--rkw-ink-muted);
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	transition:
+		background 0.15s ease,
+		color 0.15s ease;
+}
+
+.portal-tab:hover {
+	color: var(--rkw-ink);
+}
+
+.portal-tab.is-active {
+	/* Mixed into the surface rather than a fixed tint, so the selected half
+	   lands lighter than the trough on a light panel and darker on a dark
+	   one. A fixed white would be a glare in the dark. */
+	background: color-mix(in srgb, var(--rkw-brand) 16%, var(--rkw-surface));
+	color: var(--rkw-ink);
+	box-shadow: none;
+}
+
+/* Both classes are one class each, so .portal-tabs further down the file was
+   winning on source order and putting its padding back. Qualified with both
+   so the override does not depend on where either rule happens to sit. */
+.portal-tabs.qr-tabs {
+	width: auto;
+	padding: 0;
+	gap: 0;
+	border-radius: 9px;
+	/* Clips the selected half to the container's corners, which is what lets
+	   the buttons themselves stay square. */
+	overflow: hidden;
+}
+
+.qr-tabs .portal-tab {
+	flex: none;
+	padding: 0.4375rem 0.875rem;
+	border-radius: 0;
+	font-size: 0.75rem;
+}
+
+/* The shadow lifted the pill off the trough. With no trough it only muddies
+   the join between the two halves. */
+.qr-tabs .portal-tab.is-active {
+	box-shadow: none;
+}
+
+/* The code itself stays light in every theme, and that is not an oversight.
+   A QR code is read by a camera looking for dark modules on a light field;
+   inverted, a good many scanners simply do not see it. The frame around it
+   follows the theme, the code inside it does not. */
+.qr-frame {
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 100%;
+	/* No padding: the margin a scanner needs is the code's own quiet zone,
+	   drawn inside the SVG, so a second margin out here was only making the
+	   code smaller. See lib/qr.ts. */
+	padding: 0;
+	border: 1px solid var(--rkw-line);
+	border-radius: 22px;
+	background: var(--rkw-surface);
+	overflow: hidden;
+}
+
+.qr {
+	width: 100%;
+	/* Uncapped: the dialog is a fixed 22.5rem, so the frame is already the
+	   width of the panel and any cap here is horizontal padding by another
+	   name. The code is square, so this sets the frame's height too. */
+	max-width: none;
+	aspect-ratio: 1;
+	display: grid;
+	place-items: center;
+}
+
+.qr svg {
+	width: 100%;
+	height: 100%;
+}
+
+/* Until the encoder is enabled the link itself is shown, so the panel is still
+   usable rather than an empty box. */
+.qr-fallback {
+	border: 1px dashed var(--rkw-line);
+	border-radius: 10px;
+	padding: 1rem;
+	background: var(--rkw-ground);
+}
+
+.qr-fallback code {
+	font-size: 0.6875rem;
+	line-height: 1.5;
+	word-break: break-all;
+	text-align: center;
+	color: var(--rkw-ink-muted);
+}
+
+/* Held in the code's own square, so the panel is the same height before and
+   after the relay answers. Named inside .qr because the rule above fills that
+   square with whatever svg is in it, which is right for a code and leaves a
+   spinner the size of the whole panel. */
+.qr .qr-spinner {
+	width: 2.5rem;
+	height: 2.5rem;
+	color: var(--rkw-brand);
+	animation: connect-spin 1.1s linear infinite;
+}
+
+/* The wallet mark sits over the QR's centre, as wallet apps expect. */
+.qr-badge {
+	position: absolute;
+	display: grid;
+	place-items: center;
+	padding: 0.25rem;
+	border-radius: 12px;
+	background: var(--rkw-surface);
+}
+
+.qr-caption {
+	margin: 0;
+	font-size: 0.8125rem;
+	text-align: center;
+}
+
+.qr-copy {
+	font-size: 0.8125rem;
+}
+
+.install-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	width: 100%;
+	padding: 0.625rem 0.75rem;
+	border: 1px solid var(--rkw-line);
+	border-radius: var(--rkw-radius);
+	background: var(--rkw-ground);
+	font-size: 0.8125rem;
+}
+
+.install-row .secondary {
+	text-decoration: none;
+	display: inline-block;
+}
+
+@keyframes connect-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
