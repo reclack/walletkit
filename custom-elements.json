@@ -1,0 +1,207 @@
+{
+	"schemaVersion": "2.1.0",
+	"readme": "README.md",
+	"modules": [
+		{
+			"kind": "javascript-module",
+			"path": "dist/element.js",
+			"declarations": [
+				{
+					"kind": "class",
+					"name": "ReclackConnectElement",
+					"tagName": "reclack-connect",
+					"customElement": true,
+					"description": "Connect a wallet, read an address, read a balance.",
+					"attributes": [
+						{
+							"name": "variant",
+							"type": {
+								"text": "'inline' | 'modal'"
+							},
+							"description": "Where the picker sits: a list on the page, or the whole picker over it."
+						},
+						{
+							"name": "family",
+							"type": {
+								"text": "'evm' | 'svm'"
+							},
+							"description": "Restricts the list to one chain family. Both when absent."
+						},
+						{
+							"name": "chain-id",
+							"type": {
+								"text": "number"
+							},
+							"description": "The EVM chain the wallet must end up on. No switch is forced without it."
+						},
+						{
+							"name": "intent",
+							"type": {
+								"text": "string"
+							},
+							"description": "Comma separated: address, balance."
+						},
+						{
+							"name": "keep-alive",
+							"type": {
+								"text": "boolean"
+							},
+							"description": "Hold the connection open afterwards, for a page that signs later."
+						},
+						{
+							"name": "theme-mode",
+							"type": {
+								"text": "'light' | 'dark' | 'system'"
+							},
+							"description": "Light, dark, or whatever the reader\u2019s system says."
+						},
+						{
+							"name": "brand",
+							"type": {
+								"text": "string"
+							},
+							"description": "#rrggbb. Anything else is ignored and the default stands."
+						},
+						{
+							"name": "radius",
+							"type": {
+								"text": "string"
+							},
+							"description": "Corner radius, as a CSS length."
+						},
+						{
+							"name": "font",
+							"type": {
+								"text": "string"
+							},
+							"description": "The host\u2019s type, so the picker does not arrive in a different face."
+						},
+						{
+							"name": "asset-base",
+							"type": {
+								"text": "string"
+							},
+							"description": "Where the host serves this package's assets/ directory from."
+						},
+						{
+							"name": "api-url",
+							"type": {
+								"text": "string"
+							},
+							"description": "A different Reclack to read the wallet catalogue from, such as a sandbox."
+						}
+					],
+					"members": [
+						{
+							"kind": "field",
+							"name": "kit",
+							"type": {
+								"text": "WalletKit"
+							},
+							"description": "A kit to share rather than one this element would make for itself."
+						},
+						{
+							"kind": "field",
+							"name": "request",
+							"type": {
+								"text": "ConnectRequest"
+							},
+							"description": "The whole request, for an intent carrying assets."
+						},
+						{
+							"kind": "field",
+							"name": "theme",
+							"type": {
+								"text": "WalletKitTheme"
+							},
+							"description": "The whole theme, for per-mode overrides."
+						}
+					],
+					"events": [
+						{
+							"name": "connect",
+							"type": {
+								"text": "CustomEvent<ConnectResult>"
+							},
+							"description": "A wallet was connected and the intent resolved."
+						},
+						{
+							"name": "cancel",
+							"type": {
+								"text": "CustomEvent"
+							},
+							"description": "The picker was closed without connecting."
+						},
+						{
+							"name": "connect-error",
+							"type": {
+								"text": "CustomEvent<{ message: string }>"
+							},
+							"description": "Something refused. Named connect-error because every element already has an error event for a resource that failed to load."
+						}
+					],
+					"cssProperties": [
+						{
+							"name": "--rkw-surface",
+							"description": "The panel itself."
+						},
+						{
+							"name": "--rkw-ground",
+							"description": "Behind the panel."
+						},
+						{
+							"name": "--rkw-plate",
+							"description": "Rows and plates inside it."
+						},
+						{
+							"name": "--rkw-ink",
+							"description": "Primary text."
+						},
+						{
+							"name": "--rkw-ink-muted",
+							"description": "Secondary text."
+						},
+						{
+							"name": "--rkw-line",
+							"description": "Hairlines and borders."
+						},
+						{
+							"name": "--rkw-brand",
+							"description": "The primary action and the focus ring."
+						},
+						{
+							"name": "--rkw-brand-ink",
+							"description": "Text on the brand colour. Computed when not set."
+						},
+						{
+							"name": "--rkw-danger",
+							"description": "A refusal."
+						},
+						{
+							"name": "--rkw-ok",
+							"description": "A success."
+						},
+						{
+							"name": "--rkw-radius",
+							"description": "Corner radius."
+						},
+						{
+							"name": "--rkw-font",
+							"description": "Type face."
+						}
+					]
+				}
+			],
+			"exports": [
+				{
+					"kind": "custom-element-definition",
+					"name": "reclack-connect",
+					"declaration": {
+						"name": "ReclackConnectElement",
+						"module": "dist/element.js"
+					}
+				}
+			]
+		}
+	]
+}

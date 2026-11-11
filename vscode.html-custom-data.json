@@ -1,0 +1,55 @@
+{
+	"version": 1.1,
+	"tags": [
+		{
+			"name": "reclack-connect",
+			"description": "Connect a wallet, read an address, read a balance.",
+			"attributes": [
+				{
+					"name": "variant",
+					"description": "Where the picker sits: a list on the page, or the whole picker over it."
+				},
+				{
+					"name": "family",
+					"description": "Restricts the list to one chain family. Both when absent."
+				},
+				{
+					"name": "chain-id",
+					"description": "The EVM chain the wallet must end up on. No switch is forced without it."
+				},
+				{
+					"name": "intent",
+					"description": "Comma separated: address, balance."
+				},
+				{
+					"name": "keep-alive",
+					"description": "Hold the connection open afterwards, for a page that signs later."
+				},
+				{
+					"name": "theme-mode",
+					"description": "Light, dark, or whatever the reader\u2019s system says."
+				},
+				{
+					"name": "brand",
+					"description": "#rrggbb. Anything else is ignored and the default stands."
+				},
+				{
+					"name": "radius",
+					"description": "Corner radius, as a CSS length."
+				},
+				{
+					"name": "font",
+					"description": "The host\u2019s type, so the picker does not arrive in a different face."
+				},
+				{
+					"name": "asset-base",
+					"description": "Where the host serves this package's assets/ directory from."
+				},
+				{
+					"name": "api-url",
+					"description": "A different Reclack to read the wallet catalogue from, such as a sandbox."
+				}
+			]
+		}
+	]
+}
