@@ -1,154 +1,54 @@
 # @reclack/walletkit
 
-Connect a wallet, read an address, read a balance. No renderer, no framework,
-no wallet SDK.
+A wallet picker and connection layer for the web. Connect a wallet, read an
+address, read a balance, on EVM chains and on Solana.
 
-Wallets speak EIP-1193, EIP-6963 and the Wallet Standard, all of which are
-small enough to talk to by hand. A page that handles other people's money
-should ship as little code it did not write as it can, so this talks to them
-directly.
-
-One dependency, and only five wallets need it: Safe, Kraken, BitPay,
-Bitcoin.com and Blockchain.com inject nothing into a page, so they are reached
-over a relay. Its provider sits behind a dynamic import and is fetched only
-when one of those is chosen. Everyone else loads none of it.
+- **Works with any framework.** The picker is a custom element, and the
+  connection layer is a plain object with `getState` and `subscribe`.
+- **One dependency**, loaded only when someone picks a wallet that needs it.
+- **Nothing to configure.** Endpoints, the wallet catalogue and relay pairing
+  all ship with sensible defaults.
+- **Typed**, and safe to import in a server render.
 
 ```sh
 npm install @reclack/walletkit
 ```
 
-## The kit
-
-Everything hangs off one object with `getState` and `subscribe`. That pair is
-the only shape every framework agrees on, so this package picks none of them.
-
-```ts
-import { createWalletKit } from '@reclack/walletkit'
-
-const kit = createWalletKit()
-const stop = kit.subscribe(() => render(kit.getState()))
-```
-
-No configuration. Which API to read the wallet catalogue from, which relay to
-pair over, which endpoints to read balances from: none of that is a decision a
-page embedding a wallet picker should have to make, so the kit ships with it.
-Options exist for a sandbox, a private endpoint or a partner running the kit
-under its own name, and all of them are overrides rather than requirements.
-
-Nothing touches `window` until the first subscriber arrives, so importing this
-on a server is safe and a host that renders on one needs no guards.
-
-### Vanilla
-
-```js
-kit.subscribe(() => {
-  const { evm } = kit.getState()
-  list.replaceChildren(...evm.available.map(toRow))
-})
-```
-
-### React
-
-```tsx
-const state = useSyncExternalStore(kit.subscribe, kit.getState, kit.getState)
-```
-
-### Vue
-
-```ts
-const state = shallowRef(kit.getState())
-onMounted(() => kit.subscribe(() => { state.value = kit.getState() }))
-```
-
-### Svelte
-
-```ts
-const state = { subscribe: (run) => (run(kit.getState()), kit.subscribe(() => run(kit.getState()))) }
-```
-
-### Angular
-
-```ts
-readonly state = toSignal(new Observable((s) => kit.subscribe(() => s.next(kit.getState()))))
-```
-
-## Intent
-
-What a caller wants back from connecting, as a list rather than a mode,
-because these are not alternatives.
-
-```ts
-await kit.connectEvm(wallet)
-
-const result = await kit.resolveIntent('evm', {
-  intent: ['address', 'balance'],
-  assets: [{ family: 'evm', chainId: 8453, token: USDC, decimals: 6 }],
-  keepAlive: false,
-})
-// { address, chainId, walletId, name, family, balances }
-```
-
-- `address` is the by-product of connecting, so it is always obtained. Asking
-  for it says only that the caller wants it handed back.
-- `balance` needs an asset to be a balance of. Asking without one throws: it
-  is a mistake in the caller, not a state anybody can connect their way out of.
-- `keepAlive` holds the provider open and keeps following account and chain
-  changes. True for a checkout, which signs later. False for a form, which
-  wanted a value and is done.
-
-A chain is enforced only when `chainId` is given. A page collecting a
-settlement address should leave it out: the same address receives on every EVM
-chain, and asking somebody to switch networks in their wallet to read an
-address back is theatre.
-
-## The element
-
-The picker itself, as a custom element. An element is the only component model
-React, Vue, Angular, Svelte and a page with no framework already share, so
-that is what it is.
+## Quick start
 
 ```html
-<script type="module" src="/path/to/@reclack/walletkit/element"></script>
+<script type="module">
+  import '@reclack/walletkit/element'
+</script>
 
-<reclack-connect
-  variant="modal"
-  family="evm"
-  chain-id="8453"
-  intent="address,balance"
-  theme-mode="system"
-  brand="#ff6600"
-  asset-base="/wallets/"
-></reclack-connect>
+<reclack-connect variant="modal" family="evm"></reclack-connect>
+```
+
+Importing `@reclack/walletkit/element` defines the tag. With no bundler, point
+a module script at a CDN instead:
+
+```html
+<script type="module" src="https://esm.sh/@reclack/walletkit/element"></script>
 ```
 
 ```js
 document.querySelector('reclack-connect')
   .addEventListener('connect', (event) => {
-    event.detail // { address, chainId, walletId, name, family, balances }
+    console.log(event.detail.address)
   })
 ```
 
-Events are `connect`, `cancel` and `connect-error`, all composed, so a
-listener on an ancestor hears them through the shadow boundary. `connect-error`
-rather than `error`, which already means a resource failed to load.
+Or, if you only need a value and not a component:
 
-`variant` is `inline`, the short list a checkout puts on the page with the
-full catalogue folded behind one row, or `modal`, the whole picker over the
-page. The modal is a native `<dialog>`: focus trapping, Esc, an inert
-background and a backdrop come from the platform rather than from a focus-trap
-library shipped on a page that takes payments.
+```ts
+import { connectWallet } from '@reclack/walletkit/element'
 
-Markup is in a shadow root, so nothing here can reach the host's page and
-nothing in the page can reach in. The tokens are set on the element itself,
-where a host can still override any single one of them.
+const { address } = await connectWallet({ intent: ['address'], family: 'evm' })
+```
 
-### Your framework
+## Your framework
 
-The tag is `reclack-connect` because a custom element's name must be
-lowercase and contain a hyphen. That is the HTML spec, not a style choice, and
-nobody should have to write it.
-
-**React, and anything built on it (Next.js, Remix, React Router):**
+### React, Next.js, Remix, React Router
 
 ```sh
 npm install @reclack/walletkit @reclack/walletkit-react
@@ -167,95 +67,230 @@ import { ReclackConnect } from '@reclack/walletkit-react'
 />
 ```
 
-In Next.js the file needs `'use client'`, because the component uses hooks.
-The kit itself is safe to import on a server: it touches no browser API until
-something subscribes, and registering the element is skipped where there is no
-`customElements`.
+In Next.js, add `'use client'` to the file that renders it. Importing
+`@reclack/walletkit` itself on the server is fine.
 
-**Preact:** the same package. Preact's `preact/compat` alias makes React
-components work unchanged, which is how this checkout uses it.
+### Preact
 
-**Vue:**
+The React package, unchanged. `preact/compat` handles the rest.
+
+### Vue
 
 ```sh
 npm install @reclack/walletkit @reclack/walletkit-vue
 ```
 
 ```vue
-<ReclackConnect variant="modal" family="evm" :chain-id="8453" @connect="onConnect" />
+<script setup>
+import { ReclackConnect } from '@reclack/walletkit-vue'
+</script>
+
+<template>
+  <ReclackConnect variant="modal" family="evm" :chain-id="8453" @connect="onConnect" />
+</template>
 ```
 
-**Angular, Svelte, SolidJS, and plain HTML need no wrapper**, and adding one
-would be ceremony rather than help: all three bind properties and listen to
-custom events on an element natively, which is the whole thing a wrapper does
-for React.
+### Angular, Svelte, SolidJS, plain HTML
+
+No wrapper needed. Each binds properties and listens for events on a custom
+element natively.
 
 ```html
-<!-- Angular, with CUSTOM_ELEMENTS_SCHEMA in the component or module -->
-<reclack-connect [kit]="kit" family="evm" (connect)="onConnect($event)"></reclack-connect>
+<!-- Angular, with CUSTOM_ELEMENTS_SCHEMA on the component or module -->
+<reclack-connect family="evm" (connect)="onConnect($event)"></reclack-connect>
 ```
 
 ```svelte
 <!-- Svelte -->
-<reclack-connect {kit} family="evm" on:connect={(e) => take(e.detail)} />
+<reclack-connect family="evm" on:connect={(e) => take(e.detail)} />
 ```
 
 ```jsx
 /* SolidJS */
-<reclack-connect prop:kit={kit} family="evm" on:connect={(e) => take(e.detail)} />
+<reclack-connect family="evm" on:connect={(e) => take(e.detail)} />
 ```
 
-Editors and Vue's language server read `custom-elements.json`, shipped in this
-package, so the tag and its attributes autocomplete without a wrapper.
+Editors and Vue's language server read the `custom-elements.json` shipped in
+this package, so the tag and its attributes autocomplete without a wrapper.
 `vscode.html-custom-data.json` does the same for plain HTML.
 
-### One call
+## The element
 
-For a host that only wants a value, filling a settlement address should not
-take an element, two listeners and a piece of state:
+### Attributes
 
-```ts
-import { connectWallet } from '@reclack/walletkit/element'
+| Attribute | Values | Default | What it does |
+| --- | --- | --- | --- |
+| `variant` | `inline`, `modal` | `inline` | A list on the page, or the picker over it |
+| `family` | `evm`, `svm` | `evm` | Which wallets to offer |
+| `chain-id` | number | none | Require this chain, switching the wallet if needed |
+| `intent` | `address`, `balance`, comma separated | `address` | What to return |
+| `keep-alive` | present or absent | absent | Stay connected after resolving |
+| `theme-mode` | `light`, `dark`, `system` | `system` | Which palette to wear |
+| `brand` | `#rrggbb` | Reclack's | Your colour, worn by the primary action |
+| `radius` | CSS length | `10px` | Corner radius |
+| `font` | CSS font stack | inherited | Type |
+| `asset-base` | URL path | `/images/` | Where the wallet logos are served from |
+| `api-url` | URL | Reclack's | A different deployment, such as a sandbox |
 
-const { address } = await connectWallet({ intent: ['address'], family: 'evm' })
+### Properties
+
+For anything an attribute cannot carry, set a property instead.
+
+```js
+element.kit = sharedKit                       // share one kit, see below
+element.theme = { mode: 'dark', brand: '#f60' }
+element.request = {                           // an intent carrying assets
+  intent: ['address', 'balance'],
+  assets: [{ family: 'evm', chainId: 8453, token: USDC, decimals: 6 }],
+}
 ```
 
-It opens the modal, resolves with the result and rejects when the person
-closes it. That is a refusal, not a failure, and a caller that wants to ignore
-it can.
+### Events
 
-### Sharing a kit
+| Event | Detail |
+| --- | --- |
+| `connect` | `{ address, chainId, walletId, name, family, balances }` |
+| `cancel` | none, the person closed the picker |
+| `connect-error` | `{ message }` |
 
-Each element makes its own kit unless given one. A page with several pickers
-should share, because discovery is a window listener and a catalogue fetch,
-and a second kit runs both again to answer the same question.
+All three are composed, so a listener on an ancestor hears them through the
+shadow boundary. It is `connect-error` rather than `error` because `error`
+already means a resource failed to load.
+
+The markup lives in a shadow root, so the picker cannot restyle your page and
+your stylesheet cannot reach into it. Theme it with the attributes above, or
+by setting any `--rkw-` token on the element.
+
+`variant="modal"` is a native `<dialog>`, so focus trapping, Esc to close, an
+inert background and a backdrop all come from the browser.
+
+## The kit
+
+The element makes its own kit, and you never have to touch one. Reach for the
+kit directly when you want the wallet state without the picker, or when
+several pickers should share one.
 
 ```ts
-element.useKit(myKit)
+import { createWalletKit } from '@reclack/walletkit'
+
+const kit = createWalletKit()
+const stop = kit.subscribe(() => render(kit.getState()))
 ```
 
-Themes stay per element even then, so a dashboard can show a light picker in a
-panel and a dark one in a drawer off one kit.
+```ts
+const { evm, svm, catalog, scheme, variables, handheld } = kit.getState()
+evm.available   // the wallets this browser has
+evm.connected   // { address, chainId, walletId, name } once one is
+```
 
-## Theme
+| Method | What it does |
+| --- | --- |
+| `getState()` | The whole state, as one object |
+| `subscribe(fn)` | Calls `fn` on every change, returns an unsubscribe |
+| `connectEvm(wallet)` / `connectSvm(wallet)` | Connect one from `available` |
+| `connectRemote(wallet, chainId, onUri)` | Pair by QR code |
+| `resolveIntent(family, request)` | Connect and return what you asked for |
+| `readBalances(family, assets)` | Balances for a connected address |
+| `ensureChain(chainId)` | Switch the wallet's chain, true if it is there |
+| `setTheme(theme)` | Replace the theme, such as when branding loads |
+| `disconnect(family?)` | Drop the session |
+| `destroy()` | Release listeners |
 
-Twelve tokens, light or dark, and nothing else to override.
+`getState` and `subscribe` are all any framework needs:
 
 ```ts
-const kit = createWalletKit({
+// React
+const state = useSyncExternalStore(kit.subscribe, kit.getState, kit.getState)
+
+// Vue
+const state = shallowRef(kit.getState())
+onMounted(() => kit.subscribe(() => { state.value = kit.getState() }))
+
+// Svelte
+const state = {
+  subscribe: (run) => (run(kit.getState()), kit.subscribe(() => run(kit.getState()))),
+}
+
+// Angular
+readonly state = toSignal(
+  new Observable((s) => kit.subscribe(() => s.next(kit.getState()))),
+)
+```
+
+### Sharing one kit
+
+Discovering wallets means a window listener and a catalogue fetch. A page with
+several pickers should share a kit rather than run both twice.
+
+```ts
+element.kit = myKit
+```
+
+Themes stay per element, so one kit can serve a light picker in a panel and a
+dark one in a drawer.
+
+### Options
+
+Every one of these is an override. The defaults are what most integrations
+want.
+
+```ts
+createWalletKit({
+  theme: { mode: 'system', brand: '#ff6600' },
+  assetBase: '/wallets/',
+  rpcUrls: { 8453: 'https://your-node.example' },  // worth setting, see Balances
+  svmRpcUrl: 'https://your-solana-node.example',
+  walletConnect: { projectId: 'your-project-id' },
+  apiUrl: 'https://api.reclack.com',
+  catalog: [],        // supply the wallet list yourself instead of fetching it
+})
+```
+
+## Intent
+
+What you want back from connecting, as a list rather than a mode, because
+these are not alternatives.
+
+```ts
+await kit.connectEvm(wallet)
+
+const result = await kit.resolveIntent('evm', {
+  intent: ['address', 'balance'],
+  assets: [{ family: 'evm', chainId: 8453, token: USDC, decimals: 6 }],
+  keepAlive: false,
+})
+// { address, chainId, walletId, name, family, balances }
+```
+
+- `address` always comes back. Listing it says you want it handed to you.
+- `balance` needs an asset to be a balance of. Asking without one throws.
+- `keepAlive` holds the connection open and keeps following account and chain
+  changes. True for a checkout that signs later, false for a form that wanted
+  a value and is done.
+
+A chain is enforced only when you pass `chainId`. Leave it out when collecting
+a settlement address: the same address receives on every EVM chain, so asking
+someone to switch networks to read it back serves no purpose.
+
+## Theming
+
+Twelve tokens, light or dark.
+
+```ts
+createWalletKit({
   theme: {
-    mode: 'system',        // 'light' | 'dark' | 'system' (the default)
-    brand: '#ff6600',      // your colour, worn by the primary action
+    mode: 'system',               // 'light' | 'dark' | 'system'
+    brand: '#ff6600',             // worn by the primary action
     radius: '14px',
     fontFamily: 'Inter, sans-serif',
-    dark: { surface: '#000000' },   // applied on top, in dark only
+    dark: { surface: '#000000' }, // applied on top, in dark only
   },
 })
 ```
 
-The resolved mode and the tokens live in the state everything is already
-subscribed to, so when the reader's system flips to dark the picker follows
-without a second listener:
+The resolved mode and the tokens are part of the state you are already
+subscribed to, so the picker follows the reader's system without a second
+listener:
 
 ```ts
 const { scheme, variables } = kit.getState()
@@ -263,80 +298,96 @@ const { scheme, variables } = kit.getState()
 // variables: { '--rkw-surface': '#16161a', '--rkw-brand': '#ff6600', ... }
 ```
 
-`kit.setTheme(...)` replaces it later, which is what an embedded checkout does
-when a merchant's branding arrives.
+Three things worth knowing:
 
-Three things the kit decides rather than asking:
+- **Text on your brand colour is computed** from its relative luminance, so a
+  pale brand gets dark text rather than unreadable white.
+- **Dark is its own palette, not an inversion.** A brand colour you set is
+  kept in both modes.
+- **Colours must be `#rrggbb`.** Anything else is ignored and the default
+  stands, so a value from an API response can never end up inside a style.
 
-- **Text on the brand colour is computed**, by relative luminance, so a pale
-  brand gets dark text instead of the white that would leave the button
-  unreadable.
-- **Dark is a chosen palette, not an inverted one.** Inverting gives muddy
-  greys and a brand that has stopped contrasting with anything. A brand colour
-  a host sets is kept in both modes, though: it is their colour.
-- **A value it cannot read is dropped** and the default stands. Colours must be
-  `#rrggbb`. In the embedded checkout the branding comes from an API response
-  and ends up inside a style, and a page that takes payment details must not
-  interpolate whatever a response happens to carry.
-
-And one it decides from whether you set a brand at all: **a row is washed grey
-on hover until you pick a colour**, then in yours. The default brand is
-Reclack's own, and a page nobody has branded should not be hovering in it.
-
-Tokens are prefixed `--rkw-` because they are set on an element the host also
-styles. Without a prefix, `--surface` would silently take over or be taken
-over.
+Tokens are prefixed `--rkw-` so they cannot collide with your own.
 
 ## Balances
 
-Amounts are `bigint`, in the asset's smallest unit, and `formatUnits` places
-the decimal point with string arithmetic. Money does not survive a float.
-
-Where a balance is read from changes what it costs. Through an endpoint,
-several chains can be read at once and no wallet is dragged onto another
-network. Through the connected wallet's own provider, the wallet must already
-be on that chain. So an endpoint is the default, and the provider is for the
-one case that needs it: the pre-flight immediately before signing, where the
-question is what this exact wallet can spend right now.
-
-The pinned public endpoints are used unless a host passes its own in
-`rpcUrls`, which is worth doing for anything heavier than a balance or two.
-
-Solana is endpoint-only. Solana wallets sign; they do not answer questions
-about the chain.
-
-## Artwork
-
-Wallet logos ship in `assets/` as `.webp` files. Copy them into whatever your
-app serves static files from, then say where that is:
+Amounts are `bigint`, in the asset's smallest unit. `formatUnits` places the
+decimal point with string arithmetic, because money does not survive a float.
 
 ```ts
-createWalletKit({ assetBase: '/wallets/' })   // the kit
+import { formatUnits } from '@reclack/walletkit'
+
+const [usdc] = await kit.readBalances('evm', [
+  { family: 'evm', chainId: 8453, token: USDC, decimals: 6 },
+])
+formatUnits(usdc.amount, 6)   // "125.40"
+```
+
+Balances are read through an endpoint by default, which can cover several
+chains at once and does not move the wallet onto another network. Reading
+through the connected wallet instead requires it to already be on that chain,
+which suits a check immediately before signing.
+
+Public endpoints are used unless you pass `rpcUrls`. Set your own for anything
+heavier than a balance or two. Solana balances are endpoint-only.
+
+## Wallet artwork
+
+Logos ship in `assets/` as `.webp`. Copy them into whatever your app serves
+static files from, then say where that is:
+
+```ts
+createWalletKit({ assetBase: '/wallets/' })
 ```
 
 ```html
 <reclack-connect asset-base="/wallets/"></reclack-connect>
 ```
 
-The default is `/images/`. Served by you rather than fetched from us, so a
-checkout still makes no third-party image request, and a wallet's own EIP-6963
-icon wins over these anyway: that is the artwork of the provider actually
-present. Getting the path wrong costs the logos of wallets that are not
-installed, not the ability to connect.
+The default is `/images/`. Serving them yourself means your checkout makes no
+third-party image request. A wallet that supplies its own icon through
+EIP-6963 uses that instead, so getting the path wrong costs you the logos of
+wallets that are not installed, not the ability to connect.
 
-## WalletConnect
+## Pairing by QR code
 
-Safe, Kraken, BitPay, Bitcoin.com and Blockchain.com inject nothing into the
-page, so they are reached over a relay. Nothing to install and nothing to
-configure: the relay provider ships with the kit, behind a dynamic import, so
-only somebody who picks one of those wallets ever downloads it.
+Some wallets connect over a relay rather than through the browser. That works
+out of the box, with nothing to install or configure, and the relay provider
+is fetched only if someone picks one of those wallets.
 
-Pass `walletConnect: { projectId, metadata }` to pair under your own project.
+To pair under your own WalletConnect project instead:
 
-## Build
-
-```sh
-pnpm install
-pnpm test
-pnpm build
+```ts
+createWalletKit({
+  walletConnect: {
+    projectId: 'your-project-id',
+    metadata: { name: 'Your app', url: 'https://your-app.example' },
+  },
+})
 ```
+
+## Server rendering
+
+Nothing touches `window` until something subscribes, so importing the kit in a
+server render is safe and needs no guards. Registering the element is skipped
+where there is no `customElements`.
+
+## TypeScript
+
+Types ship with the package. The ones you are most likely to name:
+
+```ts
+import type {
+  WalletKit,
+  WalletKitState,
+  WalletKitTheme,
+  ConnectRequest,
+  ConnectResult,
+  Asset,
+  Balance,
+} from '@reclack/walletkit'
+```
+
+## Licence
+
+MIT.
