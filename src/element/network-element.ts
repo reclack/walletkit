@@ -5,7 +5,7 @@ import { AssetProvider } from './ui/assets.js'
 import { DEFAULT_LOGO_BASE } from '@reclack/walletkit'
 import { NetworkSelect } from './ui/network-select.js'
 import { applyTheme, subscribeScheme } from '@reclack/walletkit'
-import type { WalletKitTheme } from '@reclack/walletkit'
+import type { WalletKit, WalletKitTheme } from '@reclack/walletkit'
 
 /**
  * The chain picker, as an element of its own.
@@ -25,12 +25,41 @@ export class ReclackNetworkElement extends HTMLElement {
 	readonly #root: ShadowRoot
 	#mounted = false
 	#theme?: WalletKitTheme
+	#kit?: WalletKit
+	#unsubscribe?: () => void
 	#stopScheme?: () => void
 
 	constructor () {
 		super()
 		this.#root = this.attachShadow({ mode: 'open' })
 		adoptStyles(this.#root)
+	}
+
+	/**
+	 * A kit to take the theme from.
+	 *
+	 * The wallet picker reads its theme from the kit it is given, and a page
+	 * showing both should not have to theme them separately: a chain picker
+	 * in the system's dark while the wallets beside it are light is the
+	 * giveaway that it was never told.
+	 */
+	set kit (kit: WalletKit | undefined) {
+		this.#unsubscribe?.()
+		this.#kit = kit
+		this.#unsubscribe = kit?.subscribe(() => {
+			if (this.#mounted) {
+				this.#watchScheme()
+				this.#paint()
+			}
+		})
+		if (this.#mounted) {
+			this.#watchScheme()
+			this.#paint()
+		}
+	}
+
+	get kit (): WalletKit | undefined {
+		return this.#kit
 	}
 
 	/** The full theme, for anything an attribute cannot hold. */
@@ -61,6 +90,8 @@ export class ReclackNetworkElement extends HTMLElement {
 		this.#mounted = false
 		this.#stopScheme?.()
 		this.#stopScheme = undefined
+		this.#unsubscribe?.()
+		this.#unsubscribe = undefined
 		render(null, this.#root)
 	}
 
@@ -82,6 +113,12 @@ export class ReclackNetworkElement extends HTMLElement {
 	#themeFromAttributes (): WalletKitTheme | undefined {
 		if (this.#theme) {
 			return this.#theme
+		}
+		// The page's own, when it has one. A host that themed its kit should
+		// not also have to theme every picker in it.
+		const shared = this.#kit?.getState().theme
+		if (shared) {
+			return shared
 		}
 		const mode = this.getAttribute('theme-mode')
 		return {
