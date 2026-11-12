@@ -1,6 +1,6 @@
 {
 	"name": "@reclack/walletkit",
-	"version": "0.1.2",
+	"version": "0.2.0",
 	"description": "Connect a wallet, read an address, read a balance. Framework-free, no wallet SDK, no dependencies.",
 	"license": "MIT",
 	"author": "Reclack",

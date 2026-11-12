@@ -161,6 +161,39 @@ by setting any `--rkw-` token on the element.
 `variant="modal"` is a native `<dialog>`, so focus trapping, Esc to close, an
 inert background and a backdrop all come from the browser.
 
+## The network picker
+
+The chain something settles on, as a second element. A checkout asks which
+chain before it asks which wallet, and a form collecting a settlement address
+asks which chain without connecting anything at all.
+
+```html
+<reclack-network
+  networks="base,polygon,ethereum,solana"
+  value="base"
+  asset-base="/wallets/"
+></reclack-network>
+```
+
+```js
+document.querySelector('reclack-network')
+  .addEventListener('change', (event) => {
+    console.log(event.detail.network)   // 'polygon'
+  })
+```
+
+| Attribute | Values | Default | What it does |
+| --- | --- | --- | --- |
+| `networks` | comma separated names | none | The chains to choose between |
+| `value` | one of them | the first | The chain chosen, and settable |
+| `disabled` | present or absent | absent | Stops it while something is in flight |
+| `label` | text | `Network` | Empty renders no label at all |
+| `asset-base` | URL path | `/images/` | Where the chain marks are served from |
+
+It carries the same theme attributes as the picker, and `element.value` reads
+and writes the choice. Chain artwork ships in `assets/` beside the wallet
+artwork; a chain with no mark shows its initial rather than a broken image.
+
 ## The kit
 
 The element makes its own kit, and you never have to touch one. Reach for the
