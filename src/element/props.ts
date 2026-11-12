@@ -86,3 +86,58 @@ export const EVENTS = {
 	cancel: 'onCancel',
 	'connect-error': 'onError',
 } as const
+
+/**
+ * The chain picker's props, and how each becomes an attribute.
+ *
+ * Shared for the same reason the picker's are: two wrappers writing their own
+ * mapping is two mappings to keep in step with the element.
+ */
+export interface NetworkProps {
+	/** The chains to choose between, in the order they are offered. */
+	networks?: string[] | string
+	/** The chain chosen. The first is used when this names none of them. */
+	value?: string
+	/** Empty renders no label at all. */
+	label?: string
+	disabled?: boolean
+	themeMode?: 'light' | 'dark' | 'system'
+	brand?: string
+	radius?: string
+	fontFamily?: string
+	assetBase?: string
+	onChange?: (network: string) => void
+}
+
+/** The network props that are plain attributes, and their DOM names. */
+export const NETWORK_ATTRIBUTES = {
+	value: 'value',
+	label: 'label',
+	themeMode: 'theme-mode',
+	brand: 'brand',
+	radius: 'radius',
+	fontFamily: 'font',
+	assetBase: 'asset-base',
+} as const
+
+export function networkAttributesOf (props: NetworkProps): Record<string, string> {
+	const attributes: Record<string, string> = {}
+	for (const [prop, name] of Object.entries(NETWORK_ATTRIBUTES)) {
+		const value = props[prop as keyof typeof NETWORK_ATTRIBUTES]
+		if (value !== undefined) {
+			attributes[name] = String(value)
+		}
+	}
+	if (props.networks !== undefined) {
+		attributes.networks = Array.isArray(props.networks)
+			? props.networks.join(',')
+			: props.networks
+	}
+	if (props.disabled) {
+		attributes.disabled = ''
+	}
+	return attributes
+}
+
+/** The one event the chain picker dispatches. */
+export const NETWORK_EVENTS = { change: 'onChange' } as const

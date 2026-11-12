@@ -19,7 +19,12 @@ export type {
 // event. Framework-free on purpose, so the wrappers hold no logic worth
 // keeping in step.
 export { ATTRIBUTES, attributesOf, EVENTS } from './props.js'
-export type { ConnectProps } from './props.js'
+export {
+	NETWORK_ATTRIBUTES,
+	NETWORK_EVENTS,
+	networkAttributesOf,
+} from './props.js'
+export type { ConnectProps, NetworkProps } from './props.js'
 export {
 	connectWallet,
 	defineWalletElement,
