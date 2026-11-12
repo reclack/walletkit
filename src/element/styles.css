@@ -1010,3 +1010,171 @@ button {
 		transform: rotate(360deg);
 	}
 }
+
+/* ---- Network select ------------------------------------------------- */
+
+/* Ported from the hosted checkout so both draw the same control. The chain
+   a payment settles on is a choice a payer makes beside the wallet, and two
+   different-looking pickers on one page read as two different products. */
+
+.network-select {
+	position: relative;
+}
+
+.network-trigger {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	width: 100%;
+	padding: 0.625rem 0.75rem;
+	border: 1px solid var(--rkw-line);
+	border-radius: var(--rkw-radius);
+	background: var(--rkw-surface);
+	font: inherit;
+	font-size: 0.875rem;
+	color: inherit;
+	cursor: pointer;
+	text-align: left;
+}
+
+.network-trigger:hover:not(:disabled),
+.network-trigger[aria-expanded="true"] {
+	border-color: var(--rkw-brand);
+}
+
+.network-trigger:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.network-trigger-name {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Drawn rather than an icon font or SVG asset, so the picker adds nothing to
+   the bundle a checkout has to load before it can take a payment. */
+.network-caret {
+	flex: none;
+	width: 0.45rem;
+	height: 0.45rem;
+	border-right: 1.5px solid var(--rkw-ink-muted);
+	border-bottom: 1.5px solid var(--rkw-ink-muted);
+	transform: translateY(-2px) rotate(45deg);
+}
+
+.network-trigger[aria-expanded="true"] .network-caret {
+	transform: translateY(2px) rotate(-135deg);
+}
+
+.network-panel {
+	position: absolute;
+	z-index: 20;
+	top: calc(100% + 0.375rem);
+	left: 0;
+	right: 0;
+	padding: 0.5rem;
+	border: 1px solid var(--rkw-line);
+	border-radius: var(--rkw-radius);
+	background: var(--rkw-surface);
+	box-shadow: 0 12px 28px rgb(16 16 20 / 12%);
+}
+
+.network-search {
+	font: inherit;
+	font-size: 0.875rem;
+	width: 100%;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--rkw-line);
+	border-radius: 6px;
+	background: var(--rkw-surface);
+	color: inherit;
+	margin-bottom: 0.5rem;
+	appearance: none;
+}
+
+.network-search:focus,
+.network-search:focus-visible {
+	outline: none;
+	border-color: var(--rkw-ink-muted);
+}
+
+.network-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	/* Caps the panel so a long chain list scrolls instead of running past the
+	   viewport on a phone. */
+	max-height: 13rem;
+	overflow-y: auto;
+}
+
+.network-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding: 0.5rem 0.625rem;
+	border-radius: 7px;
+	font-size: 0.875rem;
+	cursor: pointer;
+}
+
+/* Pointer and keyboard share one highlight, so there are never two rows
+   disagreeing about which is current. */
+.network-item-active {
+	background: var(--rkw-ground);
+}
+
+/* Truncates like the trigger does: a long chain name must not push the amount
+   out of the row, since the amount is part of the choice being made. */
+.network-item-name {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.network-item[aria-selected="true"] .network-item-name {
+	font-weight: 600;
+	color: var(--rkw-brand);
+}
+
+/* Round rather than the wallet mark's squircle: chain marks are circular
+   artwork, and a rounded square would show the corners of the image. */
+.network-mark {
+	display: grid;
+	place-items: center;
+	width: 1.25rem;
+	height: 1.25rem;
+	border-radius: 50%;
+	background: var(--rkw-ground);
+	font-size: 0.625rem;
+	font-weight: 700;
+	overflow: hidden;
+	flex: none;
+}
+
+.network-mark img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+.network-empty {
+	padding: 0.5rem 0.625rem 0.25rem;
+}
+
+/* The label above the trigger, which the hosted checkout gets from its own
+   form styles and this has to carry itself. */
+.rkw-field {
+	display: grid;
+	gap: 0.375rem;
+}
+
+.rkw-field-label {
+	font-size: 0.8125rem;
+	color: var(--rkw-ink-muted);
+}

@@ -26,6 +26,11 @@ export function AssetProvider ({
 	return <AssetBase.Provider value={base}>{children}</AssetBase.Provider>
 }
 
+/** Where this element serves its artwork from, for anything drawing a mark. */
+export function useAssetBase (): string {
+	return useContext(AssetBase)
+}
+
 /** The artwork for a wallet, or nothing where this package carries none. */
 export function useWalletLogo (): (id: string) => string | undefined {
 	const base = useContext(AssetBase)
