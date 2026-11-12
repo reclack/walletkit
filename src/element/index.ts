@@ -26,5 +26,12 @@ export {
 	ReclackConnectElement,
 	type ConnectWalletOptions,
 } from './element.js'
+export {
+	defineNetworkElement,
+	ReclackNetworkElement,
+} from './network-element.js'
+
+import { defineNetworkElement as define } from './network-element.js'
 
 defineWalletElement()
+define()

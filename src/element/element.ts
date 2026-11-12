@@ -370,7 +370,7 @@ let sheet: CSSStyleSheet | undefined
  * pickers parses the CSS once. A `<style>` element where that is not
  * supported, which costs a parse per element and is correct everywhere.
  */
-function adoptStyles (root: ShadowRoot) {
+export function adoptStyles (root: ShadowRoot) {
 	if (typeof CSSStyleSheet !== 'undefined' && 'adoptedStyleSheets' in root) {
 		if (!sheet) {
 			sheet = new CSSStyleSheet()
