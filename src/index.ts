@@ -44,6 +44,9 @@ export type {
 	WalletKitTheme,
 } from './theme.js'
 
+// Chains, as a payer reads them.
+export { networkLabel, networkLogo, NETWORK_LOGOS } from './networks.js'
+
 // Balances.
 export { formatUnits, readEvmBalance, readSvmBalance } from './balance.js'
 export type { Asset, Balance, BalanceSource } from './balance.js'
