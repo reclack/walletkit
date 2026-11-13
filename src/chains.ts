@@ -17,7 +17,26 @@ export interface ChainMetadata {
 
 const ETH = { name: 'Ether', symbol: 'ETH', decimals: 18 }
 
+// Arc settles in the token it charges gas in, and the native balance carries
+// eighteen decimals even though the ERC-20 interface over it reports six.
+// This is the native one: it is what the wallet shows for the gas balance.
+const ARC_USDC = { name: 'USDC', symbol: 'USDC', decimals: 18 }
+
 export const CHAINS: Record<number, ChainMetadata> = {
+	5042: {
+		chainId: 5042,
+		chainName: 'Arc',
+		nativeCurrency: ARC_USDC,
+		rpcUrls: ['https://rpc.mainnet.arc.io'],
+		blockExplorerUrls: ['https://explorer.arc.io'],
+	},
+	5042002: {
+		chainId: 5042002,
+		chainName: 'Arc Testnet',
+		nativeCurrency: ARC_USDC,
+		rpcUrls: ['https://rpc.testnet.arc.io'],
+		blockExplorerUrls: ['https://explorer.testnet.arc.io'],
+	},
 	1: {
 		chainId: 1,
 		chainName: 'Ethereum',

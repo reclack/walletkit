@@ -6,7 +6,9 @@ import { formatUnits } from './balance.js'
 import { fetchWalletCatalog, walletCatalogUrl } from './catalog-fetch.js'
 import { engineOf, walletsFor, type WalletEntry } from './catalog.js'
 import { createWalletKit } from './kit.js'
+import { CHAINS, explorerTxUrl } from './chains.js'
 import { walletLogo } from './icons.js'
+import { networkLabel, networkLogo } from './networks.js'
 import {
 	applyTheme,
 	readableInk,
@@ -94,6 +96,22 @@ describe('walletLogo', () => {
 
 	it('has nothing for a wallet it carries no artwork for', () => {
 		expect(walletLogo('io.example.unknown')).toBeUndefined()
+	})
+})
+
+describe('networks', () => {
+	it('knows Arc, and a testnet wears its mainnet mark', () => {
+		expect(networkLogo('arc')).toBe('/images/arc.webp')
+		expect(networkLogo('arc-testnet')).toBe('/images/arc.webp')
+		expect(networkLabel('arc-testnet')).toBe('Arc Testnet')
+	})
+
+	it('offers a wallet the right chain, gas token and all', () => {
+		// Arc charges gas in USDC, so a wallet told it is ETH would price
+		// every fee against the wrong unit.
+		expect(CHAINS[5042]?.nativeCurrency.symbol).toBe('USDC')
+		expect(CHAINS[5042002]?.chainName).toBe('Arc Testnet')
+		expect(explorerTxUrl(5042, '0xabc')).toBe('https://explorer.arc.io/tx/0xabc')
 	})
 })
 

@@ -15,6 +15,8 @@
 import { DEFAULT_LOGO_BASE } from './icons.js'
 
 export const NETWORK_LOGOS: Record<string, string> = {
+	arc: 'arc.webp',
+	'arc-testnet': 'arc.webp',
 	base: 'base.webp',
 	'base-sepolia': 'base.webp',
 	ethereum: 'ethereum.webp',
